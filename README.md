@@ -1,6 +1,8 @@
 # find-project-root
 
-Recursively find the closest specified file
+Recommend use https://github.com/sindresorhus/find-up instead.
+
+Recursively find the closest specified file.
 
 ## Usage
 
