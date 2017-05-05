@@ -34,19 +34,24 @@ describe('sync', () => {
       findRoot.sync('./node_modules/mocha'),
       'node_modules/mocha'
     )
+
+    assert.equal(
+      findRoot.sync('./node_modules/mocha', '.git'),
+      ''
+    )
   })
 })
 
 describe('async', () => {
-  it('works', done => {
-    findRoot('./node_modules', (err, result) => {
-      if (err) return done(err)
-      assert.equal(result, '')
-      findRoot('./node_modules/mocha', (err, result) => {
-        if (err) return done(err)
-        assert.equal(result, 'node_modules/mocha')
-        done()
-      })
+  it('works', () => {
+    return Promise.all([
+      findRoot('./node_modules'),
+      findRoot('./node_modules/mocha'),
+      findRoot('./node_modules/mocha', '.git'),
+    ]).then(results => {
+      assert.equal(results[0], '')
+      assert.equal(results[1], 'node_modules/mocha')
+      assert.equal(results[2], '')
     })
   })
 })

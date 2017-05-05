@@ -1,38 +1,35 @@
 const path = require('path')
 const fs = require('fs')
 
-module.exports = (...args) => {
-  if (args.length === 0) {
-    return
-  } else if (args.length === 1) {
-    callback = args[0]
-    start = module.parent.filename
-    filename = 'package.json'
-  } else if (args.length === 2) {
-    start = args[0]
-    callback = args[1]
-    filename = 'package.json'
-  } else {
-    [ start, filename, callback ] = args
-  }
+module.exports = (
+  start = module.parent.filename,
+  filename = 'package.json',
+  callback
+) => {
+  callback = typeof callback === 'function' ? callback : a => a
 
   const checkPaths = paths => {
-    if (!paths.length) {
-      callback(null)
-      return
-    }
+    return new Promise((resolve, reject) => {
+      if (!paths.length) return resolve()
 
-    const checkingPath = paths[0]
-    fs.stat(path.join(checkingPath, filename), err => {
-      if (!err) {
-        callback(null, checkingPath)
-        return
-      }
-      checkPaths(paths.slice(1))
+      const checkingPath = paths[0]
+      fs.stat(path.join(checkingPath, filename), err => {
+        if (!err) return resolve(checkingPath)
+        checkPaths(paths.slice(1)).then(resolve, reject)
+      })
     })
   }
 
-  checkPaths(availablePaths(start))
+  return checkPaths(availablePaths(start)).then(
+    rootPath => {
+      callback(null, rootPath)
+      return rootPath
+    },
+    err => {
+      callback(err)
+      return Promise.reject(err)
+    }
+  )
 }
 
 module.exports.sync = (
